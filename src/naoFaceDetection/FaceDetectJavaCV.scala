@@ -24,25 +24,22 @@ import scala.io.Source
 
 class FaceDetectJavaCV {
 	val classiferName = "haarcascade_frontalface_alt2.xml"
-	val classiferName2 = "haarcascade_profileface.xml"
 	  
 			//Load the classifier from Resource
 	val classifierFile = Loader.extractResource(classiferName, null, "classifier", ".xml")
-	val classifierFile2 = Loader.extractResource(classiferName2, null, "classifier", ".xml")
 	
-	if (classifierFile == null || classifierFile2 == null || classifierFile.length() <= 0 || classifierFile2.length() <= 0) {
+	if (classifierFile == null || classifierFile.length() <= 0) {
 	    throw new IOException("Could not extract \"" + classiferName + "\" from Java resources.")
 	}
 	
 	//Loader.load(opencv_objdetect.class)
 	val classifier = new CvHaarClassifierCascade(cvLoad(classifierFile.getAbsolutePath()))
-	val classifier2 = new CvHaarClassifierCascade(cvLoad(classifierFile2.getAbsolutePath()))
 	classifierFile.delete()
 	if (classifier.isNull()) {
 	    throw new IOException("Could not load the classifier file.")
 	}
 	
-	def detectFace(imageData: Array[Byte]) = {
+	def detectFace(imageData: Array[Byte]) : Int = {
 	  
 		def inputStream(img: Array[Byte]): Try[ByteArrayInputStream] = {
 		    Try(new ByteArrayInputStream(img))
@@ -53,9 +50,26 @@ class FaceDetectJavaCV {
           case Failure(f) => println("Fehler beim holen des Bildes")
         }
 	  
-		val img = IplImage.createFrom(inputStream(imageData))
-		val grayImage  = IplImage.create(grabbedImage.width(),   grabbedImage.height(),   IPL_DEPTH_8U, 1)
-		val smallImage = IplImage.create(grabbedImage.width()/SPEEDUP, grabbedImage.height()/SPEEDUP, IPL_DEPTH_8U, 1)
+        //Lege einen storage an
+        val storage = CvMemStorage.create()
+        
+		//Hole Bild von Nao(.jpg) und wandle es in ein IplImage um!
+        val img = IplImage.createFrom(inputStream(imageData))
+		val grayImage  = IplImage.create(img.width(),   img.height(),   IPL_DEPTH_8U, 1)
+		val smallImage = IplImage.create(img.width()/SPEEDUP, img.height()/SPEEDUP, IPL_DEPTH_8U, 1)
+	
+		cvClearMemStorage(storage)
+		cvCvtColor(img, grayImage, CV_BGR2GRAY)
+		cvResize(grayImage,smallImage,CV_INTER_AREA)
+		
+		val faces = cvHaarDetectObjects(smallImage, classifier, storage, 1.1, 3, CV_HAAR_DO_CANNY_PRUNING)
+		
+		if(faces != null) {
+			return faces.total()
+		}else{
+			return 0
+		}
+		
 	}
 	
 }
