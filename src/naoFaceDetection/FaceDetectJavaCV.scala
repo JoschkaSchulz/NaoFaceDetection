@@ -21,11 +21,17 @@ import java.io.ByteArrayInputStream
 import scala.util.Failure
 import scala.util.Try
 import scala.io.Source
+import javax.imageio.ImageIO
 
 class FaceDetectJavaCV {
+	
+	//Einstellungen
+	val Divided = 2		//Die Bildgröße wird hierdurch geteilt und so der Prozess beschleunigt
+  
+	//Methode die verwendet werden soll
 	val classiferName = "haarcascade_frontalface_alt2.xml"
 	  
-			//Load the classifier from Resource
+	//Load the classifier from Resource
 	val classifierFile = Loader.extractResource(classiferName, null, "classifier", ".xml")
 	
 	if (classifierFile == null || classifierFile.length() <= 0) {
@@ -54,9 +60,11 @@ class FaceDetectJavaCV {
         val storage = CvMemStorage.create()
         
 		//Hole Bild von Nao(.jpg) und wandle es in ein IplImage um!
-        val img = IplImage.createFrom(inputStream(imageData))
+        val in = new ByteArrayInputStream(imageData)
+    	val bImageFromConvert = ImageIO.read(in)
+        val img = IplImage.createFrom(bImageFromConvert)
 		val grayImage  = IplImage.create(img.width(),   img.height(),   IPL_DEPTH_8U, 1)
-		val smallImage = IplImage.create(img.width()/SPEEDUP, img.height()/SPEEDUP, IPL_DEPTH_8U, 1)
+		val smallImage = IplImage.create(img.width()/Divided, img.height()/Divided, IPL_DEPTH_8U, 1)
 	
 		cvClearMemStorage(storage)
 		cvCvtColor(img, grayImage, CV_BGR2GRAY)
