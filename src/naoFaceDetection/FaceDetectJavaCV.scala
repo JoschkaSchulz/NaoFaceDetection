@@ -25,9 +25,31 @@ import javax.imageio.ImageIO
 
 class FaceDetectJavaCV {
 	
+	//==========================================
 	//Einstellungen
-	val Divided = 2		//Die BildgrÃ¶ÃŸe wird hierdurch geteilt und so der Prozess beschleunigt
+	//==========================================
+	
   
+	/*
+	 * Variable: Divided
+	 * Typ: Integer
+	 * Beschreibung:
+	 * Die Variable gibt an wie sehr das Bild verkleinert werden soll.
+	 * Durch erhöhen dieses Wertes lässt sich der erkennungsprozess 
+	 * um einiges Beschleunigen. 
+	 * 
+	 * ACHTUNG: 
+	 * Die beste erkennung scheint nicht auf auf dem größten Bild zu
+	 * funktionieren, Gesichter können doppelt erkannt werden oder
+	 * es können Gesichter erkannt werden welche nicht existieren. Ein
+	 * geeigniter WErt ist 4.
+	 */
+	val Divided = 4
+	
+	//==========================================
+	// Variablen & Konstrucktor
+	//==========================================
+	
 	//Methode die verwendet werden soll
 	val classiferName = "haarcascade_frontalface_alt2.xml"
 	  
@@ -44,6 +66,10 @@ class FaceDetectJavaCV {
 	if (classifier.isNull()) {
 	    throw new IOException("Could not load the classifier file.")
 	}
+	
+	//==========================================
+	// Methoden
+	//==========================================
 	
 	def detectFace(imageData: Array[Byte]) : Int = {
 	  

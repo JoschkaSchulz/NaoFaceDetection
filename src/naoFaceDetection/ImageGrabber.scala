@@ -11,6 +11,8 @@ import naogateway.value.NaoMessages._
 import akka.actor.actorRef2Scala
 
 object ImageGrabber extends App{
+	val faceDetector = new FaceDetectJavaCV()
+  
 	val config = ConfigFactory.load()
 	val system = ActorSystem("remoting", config.getConfig("remoting").withFallback(config))
 	
@@ -25,7 +27,8 @@ object ImageGrabber extends App{
 		    vision ! VisionCall(Resolutions.k4VGA, ColorSpaces.kRGB, Frames._20)
 		  }
 		  case c: CamResponse => {
-		    println(c.getImageData().size())
+		    val faces = faceDetector.detectFace(c.getImageData().toByteArray())
+		    sender ! Call('ALTextToSpeech, 'say, List("Ich sehe "+faces+" Personen vor mir"))
 		  }
 		}
 	}
